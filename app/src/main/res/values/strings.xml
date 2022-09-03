@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Minesweeper</string>
+    <string name="restart">Restart</string>
+    <string name="beginner">Beginner</string>
+    <string name="medium">Medium</string>
+    <string name="expert">Expert</string>
+    <string name="custom">Custom</string>
+</resources>
