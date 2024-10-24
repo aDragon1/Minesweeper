@@ -1,4 +1,4 @@
-package com.adragon.minesweeper
+package com.adragon.minesweeper.ui.activities
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.adragon.minesweeper.R
+import com.adragon.minesweeper.ui.fragments.CustomTextFragment
 
 
 class StartActivity : AppCompatActivity() {

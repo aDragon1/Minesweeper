@@ -1,4 +1,4 @@
-package com.adragon.minesweeper
+package com.adragon.minesweeper.ui.activities
 
 import android.graphics.Point
 import android.os.Bundle
@@ -12,6 +12,16 @@ import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
+import com.adragon.minesweeper.ui.adapters.CellAdapter
+import com.adragon.minesweeper.R
+import com.adragon.minesweeper.ui.utils.ZoomView
+import com.adragon.minesweeper.data.model.Cell
+import com.adragon.minesweeper.data.model.checkWin
+import com.adragon.minesweeper.data.model.gameOver
+import com.adragon.minesweeper.data.model.setMines
+import com.adragon.minesweeper.data.model.setNeighbors
+import com.adragon.minesweeper.data.model.winStuff
+import com.adragon.minesweeper.ui.fragments.RestartDialogFragment
 
 
 var row = 1
@@ -144,7 +154,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
 
     private fun createButtons(): ArrayList<ImageButton> {
         val w = getWindowSize().x
-        val size = if (col<row)
+        val size = if (col < row)
             w / col
         else w / row
 
@@ -181,7 +191,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
         return gridView
     }
 
-    private fun setZoomView(): ZoomView{
+    private fun setZoomView(): ZoomView {
         val zoomView = ZoomView(this)
         val height = ConstraintLayout.LayoutParams.MATCH_PARENT
         val width = ConstraintLayout.LayoutParams.MATCH_PARENT

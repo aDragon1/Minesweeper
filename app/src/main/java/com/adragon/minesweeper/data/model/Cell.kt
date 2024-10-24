@@ -1,7 +1,12 @@
-package com.adragon.minesweeper
+package com.adragon.minesweeper.data.model
 
 import android.content.Context
 import android.widget.Toast
+import com.adragon.minesweeper.ui.activities.col
+import com.adragon.minesweeper.ui.activities.gameEnds
+import com.adragon.minesweeper.ui.activities.grid
+import com.adragon.minesweeper.ui.activities.row
+import com.adragon.minesweeper.ui.activities.totalMines
 import java.util.*
 
 class Cell(private val i: Int, private val j:Int){
@@ -61,12 +66,12 @@ class Cell(private val i: Int, private val j:Int){
                     val i = this.i + ioff
                     val j = this.j + joff
                     if (checkEdges(i,j) &&
-                         !grid[i* col +j].isMine && !grid[i*col+j].revealed) {
+                         !grid[i* col +j].isMine && !grid[i* col +j].revealed) {
                         if (grid[i * col + j].flagged)
                             grid[i * col + j].flagged = false
                         grid[i * col + j].reveal()
                     }else
-                        if (checkEdges(i,j) && grid[i*col+j].isMine && !grid[i*col+j].flagged)
+                        if (checkEdges(i,j) && grid[i* col +j].isMine && !grid[i* col +j].flagged)
                             gameOver(context)
                 }
             }
@@ -121,8 +126,8 @@ class Cell(private val i: Int, private val j:Int){
     var rslt = true
     for (i in 0 until row) {
         for (j in 0 until col) {
-            if  (grid[i*col + j].flagged &&   grid[i * col + j].isMine) flagCount++
-            if (!grid[i*col + j].revealed && !grid[i * col + j].isMine) {
+            if  (grid[i* col + j].flagged &&   grid[i * col + j].isMine) flagCount++
+            if (!grid[i* col + j].revealed && !grid[i * col + j].isMine) {
                 rslt = false
             }
         }

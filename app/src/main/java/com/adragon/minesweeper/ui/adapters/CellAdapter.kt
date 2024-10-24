@@ -1,4 +1,4 @@
-package com.adragon.minesweeper
+package com.adragon.minesweeper.ui.adapters
 
 import android.view.View
 import android.view.ViewGroup
