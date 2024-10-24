@@ -1,5 +1,8 @@
-package com.adragon.minesweeper
+@file:Suppress("DEPRECATION")
 
+package com.adragon.minesweeper.ui.activities
+
+import android.content.pm.ActivityInfo
 import android.graphics.Point
 import android.os.Bundle
 import android.util.DisplayMetrics
@@ -12,6 +15,16 @@ import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
+import com.adragon.minesweeper.data.model.Cell
+import com.adragon.minesweeper.ui.adapters.CellAdapter
+import com.adragon.minesweeper.R
+import com.adragon.minesweeper.ui.fragments.RestartDialogFragment
+import com.adragon.minesweeper.ui.utils.ZoomView
+import com.adragon.minesweeper.data.model.checkWin
+import com.adragon.minesweeper.data.model.gameOver
+import com.adragon.minesweeper.data.model.setMines
+import com.adragon.minesweeper.data.model.setNeighbors
+import com.adragon.minesweeper.data.model.winStuff
 
 
 var row = 1
@@ -22,20 +35,22 @@ var totalMines = 0
 
 class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClickListener {
 
-    private lateinit var menu:Menu
-    var minesLeft = 0
+    private lateinit var menu: Menu
+    private var minesLeft = 0
     private var minesString = "Mines left -"
     private var flagSwitch = false
     private lateinit var buttons: ArrayList<ImageButton>
-    lateinit var gridView: GridView
-    lateinit var zoomView: ZoomView
+    private lateinit var gridView: GridView
+    private lateinit var zoomView: ZoomView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         getIntents()
         restart()
     }
 
-    private fun getIntents(){
+    private fun getIntents() {
         val intent = intent.extras
         if (intent != null) {
             col = intent.get("col") as Int
@@ -49,7 +64,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
         for (i in 0 until row)
             for (j in 0 until col)
                 grid.add(Cell(i, j))
-       setMines()
+        setMines()
         setNeighbors()
         gameEnds = false
         flagSwitch = false
@@ -62,7 +77,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
         gridView.adapter = CellAdapter(buttons)
     }
 
-    private fun buttonsStuff(){
+    private fun buttonsStuff() {
         val revealedDrawable = ContextCompat.getDrawable(this, R.drawable.revealed_buttonshape)
         for (i in 0 until row) {
             for (j in 0 until col) {
@@ -71,14 +86,17 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
                         buttons[i * col + j].background = revealedDrawable
                         buttons[i * col + j].setImageResource(
                             if (grid[i * col + j].isMine) {
-                                R.drawable.tile_mine500
+                                R.drawable.ic_tile_mine500
                             } else getNumImg(grid[i * col + j].neighbors)
                         )
                     }
+
                     (gameEnds && grid[i * col + j].flagged && !grid[i * col + j].isMine)
-                    -> buttons[i * col + j].setImageResource(R.drawable.tile_wrong_500)
+                    -> buttons[i * col + j].setImageResource(R.drawable.ic_tile_wrong_500)
+
                     grid[i * col + j].flagged
-                    -> buttons[i * col + j].setImageResource(R.drawable.tile_flag500)
+                    -> buttons[i * col + j].setImageResource(R.drawable.ic_tile_flag500)
+
                     !grid[i * col + j].flagged
                     -> buttons[i * col + j].setImageResource(R.drawable.nothing_selected)
                 }
@@ -88,48 +106,52 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
     }
 
     override fun onClick(v: View?) {
-        runOnUiThread {
-            if (!gameEnds){
-                val position = v?.id as Int
-                when{
-                    !flagSwitch -> {
-                        if (!grid[position].flagged) {
-                            when {
-                                grid[position].isMine -> {
-                                    gameOver(this)
-                                    buttons[position].background =
-                                        ContextCompat.getDrawable(this, R.color.red)
-                                }
-                                (!grid[position].flagged && !grid[position].revealed) -> {
-                                    grid[position].reveal()
-                                    if (checkWin())
-                                        winStuff(this)
-                                }
-                                (!grid[position].flagged && grid[position].revealed) ->
-                                    grid[position].revealOnNumClick(this)
-                            }
+        if (gameEnds) return
+        val position = v?.id as Int
+        when {
+            !flagSwitch -> {
+                if (!grid[position].flagged) {
+                    when {
+                        grid[position].isMine -> {
+                            gameOver(this)
+                            buttons[position].background =
+                                ContextCompat.getDrawable(this, R.color.red)
                         }
-                    }
-                    flagSwitch -> {
-                        if  (!grid[position].flagged && grid[position].revealed)
+
+                        (!grid[position].flagged && !grid[position].revealed) -> {
+                            grid[position].reveal()
+                            if (checkWin())
+                                winStuff(this)
+                        }
+
+                        (!grid[position].flagged && grid[position].revealed) ->
                             grid[position].revealOnNumClick(this)
-                        buttons[position].performLongClick()
                     }
                 }
-                buttonsStuff()
+            }
+
+            flagSwitch -> {
+                if (!grid[position].flagged && grid[position].revealed)
+                    grid[position].revealOnNumClick(this)
+                buttons[position].performLongClick()
             }
         }
+        buttonsStuff()
     }
 
     override fun onLongClick(v: View?): Boolean {
-        val position = v?.id as Int
-        if (!grid[position].revealed && !gameEnds){
-            if (grid[position].flagged) minesLeft -= 1 else minesLeft += 1
-            grid[position].flagged = !grid[position].flagged
-            if (checkWin())
-                winStuff(this)
-            buttonsStuff()
-            menu.findItem(R.id.MinesLeft).title = "$minesString $minesLeft"
+        runOnUiThread {
+            val position = v?.id as Int
+            if (!grid[position].revealed && !gameEnds) {
+                if (!grid[position].flagged && grid[position].isMine)
+                    minesLeft -= 1 else minesLeft += 1
+                grid[position].flagged = !grid[position].flagged
+                if (checkWin())
+                    winStuff(this)
+                buttonsStuff()
+                menu.findItem(R.id.MinesLeft).title = "$minesString $minesLeft"
+                println("$minesString $minesLeft")
+            }
         }
         return true
     }
@@ -144,7 +166,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
 
     private fun createButtons(): ArrayList<ImageButton> {
         val w = getWindowSize().x
-        val size = if (col<row)
+        val size = if (col < row)
             w / col
         else w / row
 
@@ -172,25 +194,32 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
     private fun setGridView(): GridView {
         val gridView = GridView(this)
         gridView.numColumns = col
+
         val height = ConstraintLayout.LayoutParams.MATCH_PARENT
         val width = ConstraintLayout.LayoutParams.MATCH_PARENT
         val layoutParams = ConstraintLayout.LayoutParams(width, height)
+
         layoutParams.leftToLeft = ConstraintLayout.LayoutParams.PARENT_ID
         layoutParams.topToTop = ConstraintLayout.LayoutParams.PARENT_ID
         gridView.layoutParams = layoutParams
+
         return gridView
     }
 
-    private fun setZoomView(): ZoomView{
+    private fun setZoomView(): ZoomView {
         val zoomView = ZoomView(this)
         val height = ConstraintLayout.LayoutParams.MATCH_PARENT
         val width = ConstraintLayout.LayoutParams.MATCH_PARENT
         val layoutParams = ConstraintLayout.LayoutParams(width, height)
+
         layoutParams.leftToLeft = ConstraintLayout.LayoutParams.PARENT_ID
         layoutParams.topToTop = ConstraintLayout.LayoutParams.PARENT_ID
         zoomView.layoutParams = layoutParams
+
         val constrainLayout = ConstraintLayout(this)
+
         zoomView.addView(gridView)
+
         setContentView(constrainLayout)
         return zoomView
     }
@@ -201,10 +230,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
             2 -> R.drawable.tile_2_500
             3 -> R.drawable.tile_3_500
             4 -> R.drawable.tile_4_500
-            5 -> R.drawable.tile_5_500
-            6 -> R.drawable.tile_6_500
-            7 -> R.drawable.tile_7_500
-            8 -> R.drawable.tile_8_500
+            5 -> R.drawable.ic_tile_5_500
+            6 -> R.drawable.ic_tile_6_500
+            7 -> R.drawable.ic_tile_7_500
+            8 -> R.drawable.ic_tile_8_500
             else -> {
                 return ContextCompat.getColor(this, R.color.purple_200)
             }
@@ -214,16 +243,17 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         this.menu = menu
         menuInflater.inflate(R.menu.menu, menu)
-        val nothing = ContextCompat.getDrawable(this, R.drawable.tile_flag_off500)
+        val nothing = ContextCompat.getDrawable(this, R.drawable.ic_tile_flag_off500)
         menu.findItem(R.id.MinesLeft).title = "$minesString $totalMines"
         menu.findItem(R.id.flagSwitcher).icon = nothing
         return super.onCreateOptionsMenu(menu)
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        menu.findItem(R.id.MinesLeft).title = "$minesString $totalMines"
-        val nothing = ContextCompat.getDrawable(this, R.drawable.tile_flag_off500)
-        val flag = ContextCompat.getDrawable(this, R.drawable.tile_flag500)
+        menu.findItem(R.id.MinesLeft).title = "$minesString $minesLeft"
+        println("$minesString $minesLeft")
+        val nothing = ContextCompat.getDrawable(this, R.drawable.ic_tile_flag_off500)
+        val flag = ContextCompat.getDrawable(this, R.drawable.ic_tile_flag500)
         menu.findItem(R.id.flagSwitcher).icon = if (flagSwitch) flag else nothing
         return super.onPrepareOptionsMenu(menu)
     }
@@ -240,6 +270,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
                     onPrepareOptionsMenu(menu)
                 }
             }
+
             R.id.flagSwitcher -> {
                 flagSwitch = !flagSwitch
                 onPrepareOptionsMenu(menu)

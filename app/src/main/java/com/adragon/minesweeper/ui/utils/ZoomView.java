@@ -1,4 +1,4 @@
-package com.adragon.minesweeper;
+package com.adragon.minesweeper.ui.utils;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -6,14 +6,13 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.Toast;
 
 /**
  * Zooming view.
+ * @noinspection deprecation
  */
 public class ZoomView extends FrameLayout {
 
@@ -233,10 +232,6 @@ public class ZoomView extends FrameLayout {
             touchStartY = y;
             touchLastX = x;
             touchLastY = y;
-            dx = 0;
-            dy = 0;
-            lx = 0;
-            ly = 0;
             scrolling = false;
             break;
 
@@ -308,7 +303,6 @@ public class ZoomView extends FrameLayout {
         lastd = d;
         final float ld = Math.abs(d - startd);
 
-        Math.atan2(y2 - y1, x2 - x1);
         switch (ev.getAction()) {
         case MotionEvent.ACTION_DOWN:
             startd = d;

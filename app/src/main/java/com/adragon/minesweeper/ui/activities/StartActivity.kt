@@ -1,4 +1,4 @@
-package com.adragon.minesweeper
+package com.adragon.minesweeper.ui.activities
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -6,15 +6,16 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.adragon.minesweeper.R
+import com.adragon.minesweeper.data.model.GameSettings
+import com.adragon.minesweeper.ui.fragments.CustomTextFragment
 
 
 class StartActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.start_activity)
-
         setButtons()
-        println("smt")
     }
 
     @SuppressLint("SetTextI18n")
@@ -34,14 +35,14 @@ class StartActivity : AppCompatActivity() {
             supportFragmentManager.findFragmentById(R.id.totalMinesFrag) as CustomTextFragment
 
         // set fragment text
-        colFragment.nameText.text        = "  Cols:       "
-        rowFragment.nameText.text        = "  Rows:       "
+        colFragment.nameText.text = "  Cols:       "
+        rowFragment.nameText.text = "  Rows:       "
         totalMinesFragment.nameText.text = "  Total mines:"
 
         // set base level difficult
-        val beginner = Settings(9,9,10)
-        val medium   = Settings(16,16,40)
-        val expert   = Settings(30,16,99)
+        val beginner = GameSettings(9, 9, 10)
+        val medium = GameSettings(16, 16, 40)
+        val expert = GameSettings(30, 16, 99)
 
         // on click + intent
         val intent = Intent(this, MainActivity::class.java)
@@ -68,14 +69,13 @@ class StartActivity : AppCompatActivity() {
             val row: String? = rowFragment.valueText.text?.toString()
             val totalMines: String? = totalMinesFragment.valueText.text?.toString()
             if (col != null && row != null && totalMines != null) {
-              intent.putExtra("row", col)
-              intent.putExtra("col", row)
-              intent.putExtra("totalMines", totalMines)
-              startActivity(intent)
-            } else
-                Toast.makeText(this,"Введите все значение", Toast.LENGTH_SHORT).show()
-        }
 
+                intent.putExtra("row", col)
+                intent.putExtra("col", row)
+                intent.putExtra("totalMines", totalMines)
+                startActivity(intent)
+            } else
+                Toast.makeText(this, "Введите все значение", Toast.LENGTH_SHORT).show()
+        }
     }
 }
-private data class Settings(val row:Int,val col:Int,val totalMines: Int)
